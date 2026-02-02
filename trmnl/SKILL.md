@@ -98,6 +98,7 @@ Read these files as needed:
 - `gap--space-between` = push sections to edges
 - `title_bar` = always at bottom, outside layout
 - `divider` = separate major sections
+- **CRITICAL:** Only ONE `.layout` element per view (no nesting)
 
 ## Grid System (10-Column)
 
@@ -162,11 +163,14 @@ Use dithered classes, not inline gray colors:
 | Attribute | Purpose |
 |-----------|---------|
 | `data-fit-value="true"` | Auto-resize text to fit |
+| `data-value-format="true"` | Auto-format numbers (locale-aware) |
 | `data-clamp="N"` | Limit to N lines |
 | `data-overflow="true"` | Enable overflow management |
 | `data-overflow-counter="true"` | Show "and X more" |
+| `data-overflow-max-cols="N"` | Max columns for overflow |
 | `data-content-limiter="true"` | Auto-adjust text size |
 | `data-pixel-perfect="true"` | Crisp text rendering |
+| `data-table-limit="true"` | Table overflow with "and X more" |
 
 ## Label & Title Variants
 
@@ -222,6 +226,18 @@ Use dithered classes, not inline gray colors:
 11. Temp file method for curl
 12. Minimal confirmations
 
+## Mashup Layouts (Multi-Plugin)
+
+For dashboard views with multiple plugins:
+
+| Layout | Description |
+|--------|-------------|
+| `mashup--1Lx1R` | 2 columns (50/50) |
+| `mashup--1Tx1B` | 2 rows (50/50) |
+| `mashup--2x2` | 4 quadrants |
+
+See `references/layout-systems.md` for all 7 layouts.
+
 ## Troubleshooting
 
 | Problem | Solution |
@@ -232,3 +248,5 @@ Use dithered classes, not inline gray colors:
 | Numbers misaligned | Add `value--tnums` |
 | Text overflow | Use `data-clamp` or `data-overflow` |
 | Columns misaligned | Use `layout--start` not `layout--center` |
+| Multiple layouts error | Keep only ONE `.layout` element per view |
+| Nested content fails | Use `.richtext` for nested/formatted content |

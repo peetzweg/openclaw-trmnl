@@ -122,6 +122,46 @@ Simple balanced column layouts:
 
 Automatically distributes space evenly across columns.
 
+## Mashup Layouts
+
+Multi-plugin dashboard configurations using CSS Grid.
+
+**Container:** `mashup mashup--{layout}`
+
+| Layout | Description |
+|--------|-------------|
+| `mashup--1Lx1R` | 2 equal vertical columns (left/right) |
+| `mashup--1Tx1B` | 2 equal horizontal rows (top/bottom) |
+| `mashup--1Lx2R` | 1 full-height left + 2 stacked right |
+| `mashup--2Lx1R` | 2 stacked left + 1 full-height right |
+| `mashup--2Tx1B` | 2 side-by-side top + 1 full-width bottom |
+| `mashup--1Tx2B` | 1 full-width top + 2 side-by-side bottom |
+| `mashup--2x2` | 2x2 grid (4 equal quadrants) |
+
+**View sizes:**
+- `view--half_vertical` - 50% vertical
+- `view--half_horizontal` - 50% horizontal
+- `view--quadrant` - 25% (quarter)
+
+**Example:**
+```html
+<div class="mashup mashup--1Lx2R">
+  <div class="view view--half_vertical">
+    <div class="layout">Left content</div>
+  </div>
+  <div class="view view--quadrant">
+    <div class="layout">Top right</div>
+  </div>
+  <div class="view view--quadrant">
+    <div class="layout">Bottom right</div>
+  </div>
+</div>
+```
+
+**Rules:**
+- View count must match layout configuration
+- All views must contain a `.layout` div
+
 ## Layout Component
 
 Flexible container using Flexbox with semantic naming:

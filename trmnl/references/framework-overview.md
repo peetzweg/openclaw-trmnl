@@ -12,6 +12,12 @@ TRMNL (pronounced "terminal") is an open-source e-ink adaptive front-end framewo
 - **Bit depth:** 2-bit (4 grayscale levels)
 - **Battery:** 1800-2500mAh (2-6 months life)
 - **Weight:** 170g
+- **Screen class:** `screen--og`
+
+### TRMNL V2
+- **Resolution:** 1040x780px
+- **Bit depth:** 4-bit (16 grayscale levels)
+- **Screen class:** `screen--v2`
 
 ### TRMNL X (10.3")
 - **Display:** 10.3" high-density e-ink
@@ -20,6 +26,15 @@ TRMNL (pronounced "terminal") is an open-source e-ink adaptive front-end framewo
 - **Refresh:** ≤1.2s full, ≤200ms partial
 - **Battery:** 6000-12000mAh (2-6 months)
 - **Features:** Waterproof, accelerometer, gesture controls
+
+### Other Supported Devices
+- Amazon Kindle 2024 (718x540, 4-bit) - `screen--amazon_kindle_2024`
+- Kindle Paperwhite, Oasis, Scribe variants
+- Kobo devices
+- Inkplate displays
+- Waveshare panels
+- Boox devices
+- M5PaperS3
 
 ## Bit Depth Support
 
@@ -105,3 +120,35 @@ Available for custom styling:
 - `--ui-scale` - UI scaling factor (0.75-1.5)
 - `--color-depth` - Display bit depth
 - `--gap` - Base gap value
+
+## Framework Runtime
+
+The runtime is a layout engine that automatically handles space constraints. Execution pipeline (sequential):
+
+| Step | Engine | Purpose |
+|------|--------|---------|
+| 1 | Clamp | Truncate text to specified lines with word-based ellipsis |
+| 2 | Overflow | Plan 1-N column layouts with "and X more" labels |
+| 3 | Value Formatting | Abbreviate numbers to fit (k, M, B) |
+| 4 | Fit Value | Adjust font size, line-height, weight for numbers |
+| 5 | Grid Gaps | Tweak CSS gaps for integer pixel widths |
+| 6 | Column Gaps | Normalize spacing between columns |
+| 7 | Pixel-Perfect | Wrap lines in spans for crisp rendering |
+| 8 | Content Limiter | Constrain height by view type |
+| 9 | Index Widths | Ensure item indices render at even widths |
+
+**Key behaviors:**
+- Per-column re-clamping after layout planning
+- Integer pixel alignment prevents visual artifacts
+- Off-screen staging tests column arrangements
+- Group headers duplicate across columns (never orphaned)
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Multiple layouts error | Keep only one `.layout` element per view |
+| Nested content fails | Use `.rich-text` instead of label/description |
+| Text overflowing | Apply `data-content-limiter` or `data-clamp` |
+| Numbers misaligned | Add `value--tnums` |
+| Columns misaligned | Use `layout--start` not `layout--center` |

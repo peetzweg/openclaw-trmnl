@@ -11,8 +11,18 @@ Base container for TRMNL displays.
 </div>
 ```
 
+**Device Classes:**
+- `screen--og` - TRMNL OG (800x480)
+- `screen--v2` - TRMNL V2 (1040x780)
+- `screen--amazon_kindle_2024` - Kindle 2024 (718x540)
+
+**Bit Depth:**
+- `screen--1bit` - Monochrome
+- `screen--2bit` - 4 grayscale levels
+- `screen--4bit` - 16 grayscale levels
+
 **Modifiers:**
-- `screen--portrait` - Portrait orientation (swaps to 480x800)
+- `screen--portrait` - Portrait orientation (swaps dimensions)
 - `screen--no-bleed` - Remove default padding
 - `screen--dark-mode` - Invert colors (except images)
 - `screen--backdrop` - Patterned/gray backgrounds
@@ -27,7 +37,7 @@ Base container for TRMNL displays.
 
 **Example:**
 ```html
-<div class="screen screen--4bit">
+<div class="screen screen--og screen--2bit">
   <div class="layout">...</div>
 </div>
 ```
@@ -311,16 +321,22 @@ Supports Line, Multi-Series Line, Bar, and Gauge charts.
 - Chartkick v5.0.1+ (optional)
 - Pattern-fill module for multi-series
 
-**Critical Configuration:**
+**Critical Configuration (REQUIRED for e-ink):**
 ```javascript
 var chart = new Chartkick.LineChart("chart-id", data, {
-  animation: false  // REQUIRED for screenshot capture
+  animation: false,           // REQUIRED
+  enableMouseTracking: false, // Disable interactions
+  hover: { enabled: false }   // No hover states
 });
 ```
 
-**Data Format:**
+**Data Formats:**
 ```javascript
+// Single series
 var data = [["2024-06-09", 975], ["2024-06-10", 840]];
+
+// Multi-series
+var data = { name: "Current", data: [["2024-06-09", 975]] };
 ```
 
 **Container:**
@@ -328,8 +344,23 @@ var data = [["2024-06-09", 975], ["2024-06-10", 840]];
 <div id="chart-id" class="w--full h--[200px]"></div>
 ```
 
+**Gauge Charts:**
+- Range: 0-100
+- Arc angles: `startAngle: -150`, `endAngle: 150`
+- Transparent backgrounds for pivot elements
+
+**Library Detection:**
+```javascript
+if ("Chartkick" in window) {
+  createChart();
+} else {
+  window.addEventListener("chartkick:load", createChart, true);
+}
+```
+
 **E-ink Considerations:**
-- Disable animations
+- Disable ALL animations
 - Use pattern fills for multi-series (1-bit displays)
 - Set explicit dimensions
+- Use dithered backgrounds: `bg--gray-30`, `bg--gray-60`
 - Configure axes for readability

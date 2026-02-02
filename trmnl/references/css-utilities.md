@@ -37,6 +37,36 @@ Example: `<span class="title">Heading</span>`
 
 Example: `<span class="value value--large">$1,234.56</span>`
 
+### Value Formatting (data-value-format)
+
+Auto-format numbers with locale support:
+```html
+<span class="value" data-value-format="true">2345678</span>
+```
+
+**Locales:**
+- `en-US` → 123,456.78
+- `de-DE` → 123.456,78
+- `fr-FR` → 123 456,78
+
+**Currencies:** `$` `€` `£` `¥` `₴` `₹` `₪` `₩` `₫` `₱` `₽` `₿`
+
+### Fit Value (Auto-resize)
+
+Automatically resize text to fit container:
+```html
+<span class="value value--xxxlarge" data-fit-value="true">12345</span>
+```
+
+For text content, specify max height:
+```html
+<span class="value" data-fit-value="true" data-fit-value-max-height="340">
+  Long text here
+</span>
+```
+
+Adjusts font size, weight, and line height to fit.
+
 ### Label Element
 - Default - Standard size
 - `label--small` - Compact
