@@ -22,93 +22,116 @@
                       ╱ │ ╲            ╱ │ ╲
 ```
 
-# 🖥️ CLAWD-TRMNL: When AI Meets E-Ink (and They Become Best Friends)
+# 🖥️ openclaw-trmnl
 
-> *"What if your AI assistant could passive-aggressively remind you to drink water... on an e-ink display?"*
-> — Someone at 3am during a hackathon
-
-## 🎯 What Is This Glorious Creation?
-
-This is a Claude Code skill that lets your AI buddy send messages directly to your [TRMNL](https://usetrmnl.com) e-ink display. Because why should your notifications be confined to your phone when they could be **aesthetically displayed in gorgeous monochrome**?
-
-## 🚀 Features That Will Change Your Life*
-
-- ✨ **Two-column layout** - Text on the left, images on the right. Revolutionary. Groundbreaking. Columnar.
-- 📝 **Markdown support** - Bold your important words. *Italicize your feelings.*
-- 🖼️ **Image support** - Display pictures! In black and white! Like a fancy newspaper from 1920!
-- 🤖 **AI-powered** - Claude does all the heavy lifting while you sip coffee
-
-*\*Life-changing effects may vary. Not responsible for excessive e-ink addiction.*
-
-## 🛠️ How It Works
-
-```
-You: "Hey Claude, remind me to touch grass"
-Claude: *sends webhook*
-Your TRMNL: 🌱 TOUCH GRASS 🌱
-You: *still doesn't touch grass*
-```
+TRMNL e-ink display toolkit for [OpenClaw](https://github.com/openclaw/openclaw) AI agents.
 
 ## 📦 What's In The Box?
 
-| File | Purpose |
-|------|---------|
-| `markup.html` | The beautiful template that makes your display look *chef's kiss* |
-| `trmnl/SKILL.md` | The brain juice that teaches Claude how to talk to your display |
-| `working.html` | A backup template, because we're professionals who plan ahead (we totally didn't need this for debugging) |
+This monorepo contains two packages:
 
-## 🎮 Usage
+| Package | Description |
+|---------|-------------|
+| [`trmnl-cli`](./packages/cli) | CLI tool for sending, validating, and tracking TRMNL payloads |
+| [`@trmnl/skill`](./packages/skill) | OpenClaw skill for AI agents to control TRMNL displays |
 
-Just tell Claude what you want on your display:
+## 🚀 Quick Start
 
-```
-/terminal display Hello World
-```
+### Install the CLI
 
-Or be fancy with images:
-
-```json
-{
-  "merge_variables": {
-    "title": "Hackathon Status",
-    "text": "**Sleep:** ❌\n**Coffee:** ✅✅✅\n**Bugs:** Yes",
-    "image": "https://i.imgur.com/yourimage.png"
-  }
-}
+```bash
+bun install -g trmnl-cli
 ```
 
-## 🏆 Why This Exists
+### Configure your webhook
 
-Because during a hackathon, someone asked:
+```bash
+trmnl config set webhook "https://trmnl.com/api/custom_plugins/YOUR_UUID"
+```
 
-> "Wouldn't it be cool if Claude could update my desk display?"
+### Send content
 
-And instead of saying "that's a lot of work," we said **"hold my energy drink"** and here we are.
+```bash
+# From HTML content
+trmnl send --content '<div class="layout">Hello TRMNL!</div>'
 
-## ⚡ Requirements
+# From a file
+trmnl send --file ./my-display.html
 
-- A TRMNL device (obviously)
-- Claude Code (the bestest CLI)
-- A webhook URL (we can't give you ours, get your own)
-- A questionable sleep schedule (optional but recommended)
+# Validate first
+trmnl validate --file ./my-display.html
+```
 
-## 🐛 Known Issues
+### View history
 
-- Display doesn't update instantly (it's e-ink, not magic... okay it's a little magic)
-- No color support (embrace the monochrome lifestyle)
-- May cause you to send way too many messages to your display just because you can
+```bash
+trmnl history           # Last 10 sends
+trmnl history --today   # Today's sends
+trmnl history --failed  # Failed sends only
+```
 
-## 🙏 Acknowledgments
+## 🛠️ CLI Commands
 
-- **TRMNL** - For making e-ink displays cool again
-- **Claude** - For being a good sport about all these webhook requests
-- **Coffee** - The real MVP
-- **Sleep** - We'll catch up with you eventually
+```
+trmnl send       Send content to TRMNL display
+trmnl validate   Validate payload without sending
+trmnl config     Manage webhook URL and settings
+trmnl history    View send history with filters
+```
+
+See [`packages/cli/README.md`](./packages/cli/README.md) for full documentation.
+
+## 🤖 OpenClaw Skill
+
+The skill teaches AI agents how to generate beautiful TRMNL content using the framework's CSS utilities.
+
+Features:
+- Rich layouts (flexbox, grid, columns)
+- Typography optimized for e-ink
+- Data visualization components
+- Automatic payload validation
+
+See [`packages/skill/SKILL.md`](./packages/skill/SKILL.md) for the skill documentation.
+
+## 📁 Data Directory
+
+The CLI stores configuration and history in `~/.trmnl/`:
+
+```
+~/.trmnl/
+├── config.toml       # Webhook URL, tier settings
+└── history.jsonl     # Send history (JSONL format)
+```
+
+## ⚡ Tier Limits
+
+| Tier | Payload Size | Rate Limit |
+|------|--------------|------------|
+| Free | 2 KB | 12 requests/hour |
+| TRMNL+ | 5 KB | 30 requests/hour |
+
+Set your tier for accurate validation:
+```bash
+trmnl config set tier plus
+```
+
+## 🏗️ Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run CLI locally
+cd packages/cli
+bun run ./src/index.ts --help
+```
+
+## 🙏 Credits
+
+- **[TRMNL](https://usetrmnl.com)** - Beautiful e-ink displays
+- **[OpenClaw](https://github.com/openclaw/openclaw)** - AI agent framework
+- Originally built at ZED x TRMNL Hackathon Berlin 2026 ☕
 
 ## 📜 License
 
-MIT - Do whatever you want, we're too tired to enforce anything.
-
----
-
-*Built with 💜 and ☕ at a hackathon where the real treasure was the webhooks we sent along the way.*
+MIT
