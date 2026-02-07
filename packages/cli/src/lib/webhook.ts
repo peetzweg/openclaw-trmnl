@@ -2,7 +2,7 @@
  * Webhook sending logic
  */
 
-import { getWebhookUrl } from './config.ts';
+import { getTier, getWebhookUrl } from './config.ts';
 import { logEntry } from './logger.ts';
 import { validatePayload } from './validator.ts';
 import type { HistoryEntry, WebhookPayload, WebhookTier } from '../types.ts';
@@ -20,7 +20,6 @@ export interface SendResult {
 export interface SendOptions {
   plugin?: string;        // Plugin name to use
   webhookUrl?: string;    // Direct URL override
-  tier?: WebhookTier;     // Tier override
   skipValidation?: boolean;
   skipLog?: boolean;
 }
@@ -33,23 +32,22 @@ export async function sendToWebhook(
   options: SendOptions = {}
 ): Promise<SendResult> {
   const startTime = Date.now();
+  const tier = getTier();
   
-  // Resolve webhook URL and tier
+  // Resolve webhook URL
   let webhookUrl: string;
   let pluginName: string;
-  let tier: WebhookTier;
 
   if (options.webhookUrl) {
     // Direct URL override
     webhookUrl = options.webhookUrl;
     pluginName = 'custom';
-    tier = options.tier || 'free';
   } else {
     // Get from config/env
     const resolved = getWebhookUrl(options.plugin);
     if (!resolved) {
       const durationMs = Date.now() - startTime;
-      const validation = validatePayload(payload, 'free');
+      const validation = validatePayload(payload, tier);
       
       let error = 'No webhook URL configured.';
       if (options.plugin) {
@@ -68,7 +66,6 @@ export async function sendToWebhook(
     }
     webhookUrl = resolved.url;
     pluginName = resolved.name;
-    tier = options.tier || resolved.tier;
   }
 
   // Validate payload

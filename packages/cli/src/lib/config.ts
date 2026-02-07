@@ -12,7 +12,7 @@ import { DEFAULT_CONFIG } from '../types.ts';
 /** Config directory path */
 export const CONFIG_DIR = join(homedir(), '.trmnl');
 
-/** Config file path (now JSON) */
+/** Config file path */
 export const CONFIG_PATH = join(CONFIG_DIR, 'config.json');
 
 /** Legacy TOML config path (for migration) */
@@ -40,22 +40,19 @@ function migrateLegacyConfig(): Config | null {
 
   try {
     const content = readFileSync(LEGACY_CONFIG_PATH, 'utf-8');
-    const config: Config = { plugins: {} };
+    const config: Config = { plugins: {}, tier: 'free' };
 
     // Parse legacy TOML (simple parser for our format)
     let webhookUrl: string | undefined;
-    let tier: WebhookTier = 'free';
 
     for (const line of content.split('\n')) {
       const trimmed = line.trim();
       const urlMatch = trimmed.match(/^url\s*=\s*"([^"]+)"/);
       if (urlMatch) webhookUrl = urlMatch[1];
-      const tierMatch = trimmed.match(/^tier\s*=\s*"([^"]+)"/);
-      if (tierMatch) tier = tierMatch[1] as WebhookTier;
     }
 
     if (webhookUrl) {
-      config.plugins['default'] = { url: webhookUrl, tier };
+      config.plugins['default'] = { url: webhookUrl };
       config.defaultPlugin = 'default';
     }
 
@@ -92,6 +89,7 @@ export function loadConfig(): Config {
     return {
       plugins: parsed.plugins || {},
       defaultPlugin: parsed.defaultPlugin,
+      tier: parsed.tier || 'free',
       history: parsed.history || DEFAULT_CONFIG.history,
     };
   } catch {
@@ -142,9 +140,9 @@ export function getPlugin(name?: string): { name: string; plugin: Plugin } | nul
 /**
  * Add or update a plugin
  */
-export function setPlugin(name: string, url: string, tier: WebhookTier = 'free', description?: string): void {
+export function setPlugin(name: string, url: string, description?: string): void {
   const config = loadConfig();
-  config.plugins[name] = { url, tier, description };
+  config.plugins[name] = { url, description };
   
   // If no default and this is the first plugin, make it default
   if (!config.defaultPlugin || Object.keys(config.plugins).length === 1) {
@@ -204,13 +202,30 @@ export function listPlugins(): Array<{ name: string; plugin: Plugin; isDefault: 
 }
 
 /**
+ * Get global tier setting
+ */
+export function getTier(): WebhookTier {
+  const config = loadConfig();
+  return config.tier || 'free';
+}
+
+/**
+ * Set global tier setting
+ */
+export function setTier(tier: WebhookTier): void {
+  const config = loadConfig();
+  config.tier = tier;
+  saveConfig(config);
+}
+
+/**
  * Get webhook URL from environment, plugin name, or default
  */
-export function getWebhookUrl(pluginName?: string): { url: string; name: string; tier: WebhookTier } | null {
+export function getWebhookUrl(pluginName?: string): { url: string; name: string } | null {
   // Environment variable takes highest precedence
   const envUrl = process.env.TRMNL_WEBHOOK;
   if (envUrl) {
-    return { url: envUrl, name: '$TRMNL_WEBHOOK', tier: 'free' };
+    return { url: envUrl, name: '$TRMNL_WEBHOOK' };
   }
 
   // Try to get plugin
@@ -219,7 +234,6 @@ export function getWebhookUrl(pluginName?: string): { url: string; name: string;
     return {
       url: result.plugin.url,
       name: result.name,
-      tier: result.plugin.tier || 'free',
     };
   }
 

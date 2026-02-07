@@ -14,7 +14,6 @@ export const TIER_LIMITS: Record<WebhookTier, number> = {
 /** Plugin configuration */
 export interface Plugin {
   url: string;
-  tier?: WebhookTier;
   description?: string;
 }
 
@@ -22,6 +21,7 @@ export interface Plugin {
 export interface Config {
   plugins: Record<string, Plugin>;
   defaultPlugin?: string;
+  tier?: WebhookTier;  // Global tier setting
   history?: {
     path?: string;
     maxSizeMb?: number;
@@ -32,6 +32,7 @@ export interface Config {
 export const DEFAULT_CONFIG: Config = {
   plugins: {},
   defaultPlugin: undefined,
+  tier: 'free',
   history: {
     path: '~/.trmnl/history.jsonl',
     maxSizeMb: 100,

@@ -112,7 +112,7 @@ The CLI stores configuration and history in `~/.trmnl/`:
 
 Set your tier for accurate validation:
 ```bash
-trmnl config set tier plus
+trmnl tier plus
 ```
 
 ## 🏗️ Development

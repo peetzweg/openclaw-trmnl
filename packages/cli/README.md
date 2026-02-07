@@ -27,15 +27,15 @@ trmnl send --file ./output.html
 
 ## Plugins
 
-Manage multiple TRMNL displays/plugins with named webhooks:
+Manage multiple TRMNL displays with named webhooks:
 
 ```bash
 # Add plugins
 trmnl plugin add home "https://trmnl.com/api/custom_plugins/abc123"
-trmnl plugin add office "https://trmnl.com/api/custom_plugins/xyz789" --tier plus
+trmnl plugin add office "https://trmnl.com/api/custom_plugins/xyz789"
 
 # List plugins
-trmnl plugin list
+trmnl plugin
 
 # Set default
 trmnl plugin default office
@@ -44,10 +44,10 @@ trmnl plugin default office
 trmnl send --file output.html --plugin home
 
 # Update plugin
-trmnl plugin update home --tier plus
+trmnl plugin set home --url "https://new-url..."
 
 # Remove plugin
-trmnl plugin remove office
+trmnl plugin rm office
 ```
 
 ## Commands
@@ -68,9 +68,6 @@ trmnl send --file ./output.html --plugin office
 
 # From stdin (piped)
 echo '{"merge_variables":{"content":"..."}}' | trmnl send
-
-# With options
-trmnl send --file output.html --skip-validation --json
 ```
 
 Options:
@@ -94,7 +91,7 @@ trmnl validate --content "..." --tier plus
 Options:
 - `-c, --content <html>` - HTML content to validate
 - `-f, --file <path>` - Read content from file
-- `-t, --tier <tier>` - Check against tier limit (`free` or `plus`)
+- `-t, --tier <tier>` - Override tier (`free` or `plus`)
 - `--json` - Output result as JSON
 
 ### `trmnl plugin`
@@ -103,26 +100,20 @@ Manage webhook plugins.
 
 ```bash
 # List plugins
-trmnl plugin list
-trmnl plugins
+trmnl plugin
 
 # Add plugin
-trmnl plugin add <name> <url> [options]
-  -t, --tier <tier>       Tier (free or plus)
-  -d, --description <desc> Plugin description
-  --default               Set as default plugin
+trmnl plugin add <name> <url>
+trmnl plugin add home "https://..." --desc "Living room"
 
 # Update plugin
-trmnl plugin update <name> [options]
-  -u, --url <url>         New webhook URL
-  -t, --tier <tier>       Tier (free or plus)
-  -d, --description <desc> Plugin description
+trmnl plugin set <name> --url "https://..."
 
 # Set default
 trmnl plugin default <name>
 
 # Remove plugin
-trmnl plugin remove <name>
+trmnl plugin rm <name>
 ```
 
 ### `trmnl config`
@@ -130,8 +121,17 @@ trmnl plugin remove <name>
 Show configuration.
 
 ```bash
-trmnl config        # Show all config
-trmnl config path   # Show config file path
+trmnl config    # Show all config
+```
+
+### `trmnl tier`
+
+Get or set the payload size tier.
+
+```bash
+trmnl tier         # Show current tier
+trmnl tier plus    # Set tier to plus (5KB limit)
+trmnl tier free    # Set tier to free (2KB limit)
 ```
 
 ### `trmnl history`
@@ -139,33 +139,14 @@ trmnl config path   # Show config file path
 View send history.
 
 ```bash
-# Last 10 sends
-trmnl history
-
-# Last N sends
-trmnl history --last 20
-
-# Filter
-trmnl history --today
-trmnl history --failed
-trmnl history --success
-trmnl history --plugin office
-
-# Stats
-trmnl history stats
-
-# Clear
-trmnl history clear --confirm
+trmnl history              # Last 10 sends
+trmnl history --last 20    # Last N sends
+trmnl history --today      # Today's sends
+trmnl history --failed     # Failed sends only
+trmnl history --plugin home  # Filter by plugin
+trmnl history stats        # Statistics
+trmnl history clear --confirm  # Clear history
 ```
-
-Options:
-- `-n, --last <n>` - Show last N entries (default: 10)
-- `--today` - Show only today's entries
-- `--failed` - Show only failed sends
-- `--success` - Show only successful sends
-- `-p, --plugin <name>` - Filter by plugin name
-- `-v, --verbose` - Show content preview
-- `--json` - Output as JSON
 
 ## Configuration
 
@@ -176,19 +157,14 @@ Options:
   "plugins": {
     "home": {
       "url": "https://trmnl.com/api/custom_plugins/...",
-      "tier": "free",
       "description": "Living room display"
     },
     "office": {
-      "url": "https://trmnl.com/api/custom_plugins/...",
-      "tier": "plus"
+      "url": "https://trmnl.com/api/custom_plugins/..."
     }
   },
   "defaultPlugin": "home",
-  "history": {
-    "path": "~/.trmnl/history.jsonl",
-    "maxSizeMb": 100
-  }
+  "tier": "free"
 }
 ```
 
@@ -196,20 +172,25 @@ Options:
 
 - `TRMNL_WEBHOOK` - Webhook URL (overrides config, highest priority)
 
-## History Format
-
-Sends are logged to `~/.trmnl/history.jsonl`:
-
-```jsonl
-{"timestamp":"2026-02-07T10:00:00Z","plugin":"home","size_bytes":1234,"tier":"free","payload":{...},"success":true,"status_code":200,"duration_ms":234}
-```
-
 ## Tier Limits
 
 | Tier | Payload Limit | Rate Limit |
 |------|---------------|------------|
 | Free | 2 KB (2,048 bytes) | 12 requests/hour |
 | Plus | 5 KB (5,120 bytes) | 30 requests/hour |
+
+Set your tier globally:
+```bash
+trmnl config tier plus
+```
+
+## History
+
+Sends are logged to `~/.trmnl/history.jsonl`:
+
+```jsonl
+{"timestamp":"2026-02-07T10:00:00Z","plugin":"home","size_bytes":1234,"success":true,...}
+```
 
 ## License
 

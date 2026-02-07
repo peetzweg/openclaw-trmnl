@@ -6,11 +6,13 @@
 import type { CAC } from 'cac';
 import {
   CONFIG_PATH,
+  getTier,
   listPlugins,
   loadConfig,
   removePlugin,
   setDefaultPlugin,
   setPlugin,
+  setTier,
 } from '../lib/config.ts';
 import { getHistoryPath } from '../lib/logger.ts';
 import type { WebhookTier } from '../types.ts';
@@ -35,8 +37,7 @@ export function registerConfigCommand(cli: CAC): void {
       } else {
         for (const { name, plugin, isDefault } of plugins) {
           const defaultMark = isDefault ? ' (default)' : '';
-          const tierMark = plugin.tier === 'plus' ? ' [plus]' : '';
-          console.log(`  ${name}${defaultMark}${tierMark}`);
+          console.log(`  ${name}${defaultMark}`);
           console.log(`    url: ${plugin.url}`);
           if (plugin.description) {
             console.log(`    desc: ${plugin.description}`);
@@ -45,19 +46,44 @@ export function registerConfigCommand(cli: CAC): void {
       }
 
       console.log('');
+      console.log(`Tier: ${config.tier || 'free'}`);
+      console.log(`  Limit: ${config.tier === 'plus' ? '5 KB' : '2 KB'}`);
+
+      console.log('');
       console.log('History:');
       console.log(`  path: ${getHistoryPath()}`);
-      console.log(`  maxSizeMb: ${config.history?.maxSizeMb || 100}`);
 
       console.log('');
       console.log('Environment:');
       console.log(`  TRMNL_WEBHOOK: ${process.env.TRMNL_WEBHOOK || '(not set)'}`);
     });
 
+  // Tier command (separate from config)
+  cli
+    .command('tier [value]', 'Get or set tier (free or plus)')
+    .example('trmnl tier         # Show current tier')
+    .example('trmnl tier plus    # Set to plus')
+    .example('trmnl tier free    # Set to free')
+    .action((value?: string) => {
+      if (!value) {
+        const tier = getTier();
+        console.log(`Tier: ${tier}`);
+        console.log(`Limit: ${tier === 'plus' ? '5 KB (5,120 bytes)' : '2 KB (2,048 bytes)'}`);
+        return;
+      }
+
+      if (value !== 'free' && value !== 'plus') {
+        console.error('Invalid tier. Use "free" or "plus".');
+        process.exit(1);
+      }
+
+      setTier(value as WebhookTier);
+      console.log(`✓ Tier set to: ${value}`);
+    });
+
   // Plugin command with action as first arg
   cli
     .command('plugin [action] [name] [url]', 'Manage webhook plugins')
-    .option('-t, --tier <tier>', 'Tier: free or plus', { default: 'free' })
     .option('-d, --desc <description>', 'Plugin description')
     .option('-u, --url <url>', 'Webhook URL (for set action)')
     .option('--default', 'Set as default plugin')
@@ -65,8 +91,8 @@ export function registerConfigCommand(cli: CAC): void {
     .example('trmnl plugin add home <url>      # Add plugin')
     .example('trmnl plugin rm home             # Remove plugin')
     .example('trmnl plugin default home        # Set default')
-    .example('trmnl plugin set home --tier plus  # Update plugin')
-    .action((action?: string, name?: string, url?: string, options?: { tier: string; desc?: string; url?: string; default?: boolean }) => {
+    .example('trmnl plugin set home --url ...  # Update plugin')
+    .action((action?: string, name?: string, url?: string, options?: { desc?: string; url?: string; default?: boolean }) => {
       // No action = list
       if (!action) {
         showPluginList();
@@ -80,7 +106,7 @@ export function registerConfigCommand(cli: CAC): void {
             console.error('Usage: trmnl plugin add <name> <url>');
             process.exit(1);
           }
-          setPlugin(name, url, (options?.tier || 'free') as WebhookTier, options?.desc);
+          setPlugin(name, url, options?.desc);
           console.log(`✓ Added plugin: ${name}`);
           if (options?.default) {
             setDefaultPlugin(name);
@@ -128,9 +154,8 @@ export function registerConfigCommand(cli: CAC): void {
             process.exit(1);
           }
           const newUrl = options?.url || existing.plugin.url;
-          const newTier = (options?.tier as WebhookTier) || existing.plugin.tier || 'free';
           const newDesc = options?.desc !== undefined ? options.desc : existing.plugin.description;
-          setPlugin(name, newUrl, newTier, newDesc);
+          setPlugin(name, newUrl, newDesc);
           console.log(`✓ Updated plugin: ${name}`);
           break;
 
@@ -173,8 +198,7 @@ function showPluginList(): void {
   console.log('Plugins:');
   for (const { name, plugin, isDefault } of plugins) {
     const defaultMark = isDefault ? ' ★' : '';
-    const tierMark = plugin.tier === 'plus' ? ' [plus]' : '';
-    console.log(`  ${name}${defaultMark}${tierMark}`);
+    console.log(`  ${name}${defaultMark}`);
     console.log(`    ${plugin.url}`);
     if (plugin.description) {
       console.log(`    ${plugin.description}`);

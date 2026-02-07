@@ -4,7 +4,7 @@
 
 import { readFileSync } from 'node:fs';
 import type { CAC } from 'cac';
-import { getPlugin } from '../lib/config.ts';
+import { getTier } from '../lib/config.ts';
 import { createPayload, formatValidation, validatePayload } from '../lib/validator.ts';
 import type { WebhookTier } from '../types.ts';
 
@@ -12,7 +12,6 @@ interface ValidateOptions {
   content?: string;
   file?: string;
   tier?: WebhookTier;
-  plugin?: string;
   json?: boolean;
 }
 
@@ -21,12 +20,10 @@ export function registerValidateCommand(cli: CAC): void {
     .command('validate', 'Validate payload without sending')
     .option('-c, --content <html>', 'HTML content to validate')
     .option('-f, --file <path>', 'Read content from file')
-    .option('-t, --tier <tier>', 'Check against tier limit (free or plus)')
-    .option('-p, --plugin <name>', 'Use tier from plugin config')
+    .option('-t, --tier <tier>', 'Override tier (free or plus)')
     .option('--json', 'Output result as JSON')
     .example('trmnl validate --file ./output.html')
     .example('trmnl validate --content "<div>...</div>" --tier plus')
-    .example('trmnl validate --file ./output.html --plugin office')
     .action(async (options: ValidateOptions) => {
       let content: string;
 
@@ -49,22 +46,8 @@ export function registerValidateCommand(cli: CAC): void {
         }
       }
 
-      // Determine tier: explicit > plugin > default
-      let tier: WebhookTier = 'free';
-      if (options.tier) {
-        tier = options.tier;
-      } else if (options.plugin) {
-        const plugin = getPlugin(options.plugin);
-        if (plugin) {
-          tier = plugin.plugin.tier || 'free';
-        }
-      } else {
-        // Try default plugin
-        const defaultPlugin = getPlugin();
-        if (defaultPlugin) {
-          tier = defaultPlugin.plugin.tier || 'free';
-        }
-      }
+      // Use explicit tier or global config
+      const tier = options.tier || getTier();
 
       // Create payload and validate
       const payload = createPayload(content);
