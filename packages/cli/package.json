@@ -1,0 +1,43 @@
+{
+  "name": "trmnl-cli",
+  "version": "0.1.0",
+  "description": "CLI tool for TRMNL e-ink displays - send, validate, and track payloads",
+  "type": "module",
+  "bin": {
+    "trmnl": "./bin/trmnl"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target node",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "cac": "^6.7.14"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin",
+    "src",
+    "dist"
+  ],
+  "keywords": [
+    "trmnl",
+    "e-ink",
+    "cli",
+    "display"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/peetzweg/openclaw-trmnl"
+  }
+}
